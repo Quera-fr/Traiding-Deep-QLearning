@@ -67,7 +67,7 @@ if st.sidebar.button("Start Trading"):
             reward = agent.calculate_reward(can_trade, action)
 
             trainer.add_to_memory(curent_state, id_action, reward, next_state, can_trade)
-            train_batch  = random.sample(trainer.memory ,  min(len(train_batch ), trainer.batch_size))
+            train_batch  = random.sample(trainer.memory ,  min(len(trainer.memory), trainer.batch_size))
 
         # Entraînement du modèle
         for state, id_action, rewards, next_state, dones in train_batch : 
