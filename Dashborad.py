@@ -13,10 +13,35 @@ def show_portefeuille(trader):
 
     d.metric("Total", trader.portefeuille["total"], "$1000", border=True)
     e.metric("Profit/Perte", trader.portefeuille["profit"], "$2000", border=True)
+    f.metric("Dernière valeur de l'action", trader.portefeuille["price_stock_market"], "$2000", border=True)
 
 
-def sidebar_settings():
+def sidebar_settings(agent, env):
+    
     st.sidebar.subheader("Settings")
+
+    if st.sidebar.checkbox("Show Portefeuille"):
+        show_portefeuille(agent)
+    
+    if st.sidebar.checkbox("Manual Trading"):
+        with st.form('action_form', border=True):
+            col1, col2, col3 = st.columns(3)
+            col4, col5 = st.columns(2)
+
+            with col1 : action = st.selectbox("Achat ou vente", options=["Buy", "Sell", "Hold"])
+            with col2 : quantities = st.slider("Nombre d'actions", 1, 50, 1)
+            with col3 : price_stock_market = st.slider("Prix de l'action", 0.0, 1000.0, 18.5)
+                
+            if st.form_submit_button("Submit") and agent.can_trade(action, quantities, price_stock_market):
+                agent.execute_trade(action, quantities, price_stock_market)
+                env.update_portefeuille(action, quantities, price_stock_market)
+                hiden_portefeuille = True
+                show_portefeuille(agent)
+
+    
+
+
+    
     if st.sidebar.checkbox("Show settings"):
         st.sidebar.write("Set the parameters for the trading bot.")
         capital = st.sidebar.number_input("Capital initial", 0, 10000, 1000)
@@ -36,3 +61,8 @@ def sidebar_settings():
             "profit_limit": profit_limit,
             "window_size": window_size
         }
+    
+    st.sidebar.button("Reset", on_click=lambda: st.session_state.clear())
+    if st.sidebar.button('Show Curent State'):
+        st.write(env.portefeuille["current_states"])
+    
